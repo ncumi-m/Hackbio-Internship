@@ -1,0 +1,51 @@
+ Names = [
+  "Ncumisa Madolo",
+  "Chelson Boakye" ,
+  "Emanueal Osei-Frempong" ,
+  "Ayiti",
+  "Priyanjali Chowdhury"
+]
+Slack_names = [
+  "Ncumisa",
+  "Chelson",
+  "Emanueal",
+  "Ayiti",
+  "Priyanjali"
+]
+Email = [
+  "ncumisam00@gmail.com" ,
+  "boakyechelson@gmail.com" ,
+  "eosei-frempong@tamu.edu" ,
+  "xyz@gmail.com" ,
+  "priyanjali150803@gmail.com"
+]
+Hobbies = [
+  "Listening to music",
+  "Travelling" ,
+  "Hobby X" ,
+  "Fixing things" ,
+  "Watching movies"
+]
+Countries = [
+  "South Africa" ,
+  "Ghana" ,
+  "Country X" ,
+  "Nigeria" ,
+  "India"
+]
+Disciplines = [
+  "Neuroscience" ,
+  "Biochemistry" ,
+  "Science X" ,
+  "Biochemistry" ,
+  "Bioinformatics"
+]
+programming_language = [
+  "Python" ,
+  "Python" ,
+  "Python" ,
+  "R" ,
+  "Python"
+]
+txt = f'Alanine-2 group members names {Names}, and our Slack usernames {Slack_names}.You can email us on {Email}. Our Hobbies include {Hobbies}. We have a diverse group with members coming from {Countries}, with disciplines in {Disciplines}. Our preferred programming lanuages are {programming_language}'
+print(txt)
