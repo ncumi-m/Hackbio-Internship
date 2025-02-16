@@ -1,0 +1,11 @@
+from math import log
+
+def time_to_80_percent(P0, K, r):
+    return (1 / r) * log(((K - P0) / P0) * 0.25)
+
+# Example values
+P0 = 10  # Initial population
+K = 100  # Carrying capacity
+r = 0.1  # Growth rate
+
+print(time_to_80_percent(P0, K, r))  # Output: Time needed
