@@ -1,0 +1,14 @@
+def hamming_distance(str1, str2):
+    # Make sure strings are equal length by padding the shorter one
+    max_len = max(len(str1), len(str2))
+    str1 = str1.ljust(max_len)
+    str2 = str2.ljust(max_len)
+
+    # Count character differences
+    return sum(c1 != c2 for c1, c2 in zip(str1, str2))
+
+slack_username = "ncumisam00"
+x_handle = "Ncumisam12"
+
+distance = hamming_distance(slack_username, x_handle)
+print(f"Hamming Distance: {distance}")
