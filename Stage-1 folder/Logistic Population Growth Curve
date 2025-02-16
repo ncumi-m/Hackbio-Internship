@@ -1,0 +1,48 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from scipy.integrate import odeint
+
+def logistic_growth(N, t, r, K):
+    return r * N * (1 - N / K)
+
+def simulate_growth_curve(t_max=24, dt=0.1, N0=0.01, K=1.0, r_base=0.5, lag_variation=2, exp_variation=2):
+    t = np.arange(0, t_max, dt)
+    
+    # Randomize lag phase duration and growth rate in exponential phase
+    lag_time = np.random.uniform(0, lag_variation)
+    r = np.random.uniform(r_base, r_base + exp_variation)
+    
+    # Create time-dependent growth rate
+    r_t = np.piecewise(t, [t < lag_time, t >= lag_time], [0, r])
+    
+    # Integrate logistic equation numerically
+    N = np.zeros_like(t)
+    N[0] = N0
+    for i in range(1, len(t)):
+        dN = r_t[i] * N[i - 1] * (1 - N[i - 1] / K) * dt
+        N[i] = max(N[i - 1] + dN, 0)
+    
+    return t, N
+
+# Generate dataframe with 100 different growth curves
+data = []
+n_curves = 100
+for i in range(n_curves):
+    t, N = simulate_growth_curve()
+    for time, density in zip(t, N):
+        data.append({'Curve': i, 'Time': time, 'Density': density})
+
+df = pd.DataFrame(data)
+print(df.head())
+
+# Plot a few sample curves
+plt.figure(figsize=(8, 6))
+for i in range(5):
+    sample_t, sample_N = simulate_growth_curve()
+    plt.plot(sample_t, sample_N, label=f'Curve {i}')
+plt.xlabel("Time (hours)")
+plt.ylabel("Cell Density")
+plt.title("Simulated Logistic Growth Curves")
+plt.legend()
+plt.show()
