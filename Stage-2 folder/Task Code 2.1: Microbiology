@@ -1,4 +1,43 @@
 import pandas as pd
+import matplotlib.pyplot as plt
+
+# Load the dataset using tab separator
 data_source = "https://raw.githubusercontent.com/HackBio-Internship/2025_project_collection/refs/heads/main/Python/Dataset/mcgc.tsv"
-df = pd.read_csv(data_source, sep = ',')
-print(df)
+df = pd.read_csv(data_source, sep='\t')
+
+# Display the first few rows to inspect data structure
+print(df.head())
+
+# Define columns corresponding to each strain and replicate
+strain1_mut = ["A1", "A3", "B1", "B3", "C1", "C3"]  # Knockout (-) for Strain 1
+strain1_wt = ["A2", "A4", "B2", "B4", "C2", "C4"]  # Knock-in (+) for Strain 1
+
+strain2_mut = ["A5", "A7", "B5", "B7", "C5", "C7"]  # Knockout (-) for Strain 2
+strain2_wt = ["A6", "A8", "B6", "B8", "C6", "C8"]  # Knock-in (+) for Strain 2
+
+strain3_mut = ["A9", "A11", "B9", "B11", "C9", "C11"]  # Knockout (-) for Strain 3
+strain3_wt = ["A10", "A12", "B10", "B12", "C10", "C12"]  # Knock-in (+) for Strain 3
+
+time_col = "time"
+
+if time_col in df.columns:
+    # Define a function to plot growth curves for each strain
+    def plot_growth_curve(mut_cols, wt_cols, strain_name):
+        df[f"{strain_name}_MUT_Avg"] = df[mut_cols].mean(axis=1)
+        df[f"{strain_name}_WT_Avg"] = df[wt_cols].mean(axis=1)
+
+        plt.figure(figsize=(8, 5))
+        plt.plot(df[time_col], df[f"{strain_name}_MUT_Avg"], label=f"{strain_name} Knock-out (MUT)", marker='o', linestyle='-')
+        plt.plot(df[time_col], df[f"{strain_name}_WT_Avg"], label=f"{strain_name} Knock-in (WT)", marker='s', linestyle='-')
+
+        plt.title(f"Growth Curve: {strain_name} (OD600 vs time)")
+        plt.xlabel("time (hours)")
+        plt.ylabel("OD600")
+        plt.legend()
+        plt.grid(True)
+        plt.show()
+
+    # Plot growth curves for each strain
+    plot_growth_curve(strain1_mut, strain1_wt, "Strain1")
+    plot_growth_curve(strain2_mut, strain2_wt, "Strain2")
+    plot_growth_curve(strain3_mut, strain3_wt, "Strain3")
