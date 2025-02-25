@@ -1,3 +1,5 @@
+#Part 1: Creating a new column ('specific_protein_aa') in both datasets
+
 import pandas as pd
 data_source_SIFT = 'https://raw.githubusercontent.com/HackBio-Internship/public_datasets/main/R/datasets/sift.tsv'
 data_source_FoldX = 'https://raw.githubusercontent.com/HackBio-Internship/public_datasets/main/R/datasets/foldX.tsv'
@@ -17,6 +19,8 @@ df_FoldX['specific_protein_aa'] = df_FoldX['Protein'] + '_' + df_FoldX['Amino_Ac
 df_FoldX.to_csv('updated_file.csv', index=False)
 print(df_FoldX.head())
 
+#Part 2: Merge updated SIFT and FoldX datasets into one final dataframe
+
 # Merge the dataframes on 'Protein' and 'Amino_Acid' to avoid duplicating columns
 final_dataframe = pd.merge(df_SIFT[['Protein', 'Amino_Acid', 'specific_protein_aa', 'sift_Score']],
                            df_FoldX[['Protein', 'Amino_Acid', 'specific_protein_aa', 'foldX_Score']],
@@ -24,3 +28,44 @@ final_dataframe = pd.merge(df_SIFT[['Protein', 'Amino_Acid', 'specific_protein_a
 
 # Display the first few rows of the final dataframe
 print(final_dataframe.head())
+
+#Part 3:  Find all mutations with a deleterious effect based on SIFT and FoldX scores
+deletarious_mutations = final_dataframe.loc[
+    (final_dataframe['sift_Score'] < 0.05) & (final_dataframe['foldX_Score'] > 2)
+] #Looking for all proteins with a sift score less than 0.05 and a foldx score greater than 2
+
+print(deletarious_mutations)
+
+#Part 4: Investigate for the amino acid that has the most functional and structural impact
+
+# Ensure deletarious_mutations is a copy to avoid warnings
+deletarious_mutations = final_dataframe.loc[
+    (final_dataframe['sift_Score'] < 0.05) & (final_dataframe['foldX_Score'] > 2)
+].copy()
+
+# Extract the first letter of each Amino_Acid mutation
+deletarious_mutations['Amino_Acid_First_Letter'] = deletarious_mutations['Amino_Acid'].str[0]
+
+# Generate the frequency table
+frequency_table = deletarious_mutations['Amino_Acid_First_Letter'].value_counts()
+
+# Print the frequency table
+print(frequency_table) 
+
+#Part 5: Generate barplot and pie chart to represent the frequency of the amino acids
+
+import seaborn as sns
+
+#Barplot
+sns.barplot(frequency_table)
+
+# Pie chart
+plt.pie(frequency_table, labels=frequency_table.index, autopct='%1.1f%%', 
+        colors=sns.color_palette("pastel", len(frequency_table)))
+
+# Add a title
+plt.title("Frequency of First Letters in Amino Acid Mutations")
+
+plt.show()
+
+#Results from frequency table show amino acid 'G' is the most frequenctly occuring in substitution mutations. G = Glycine. So that is, within this dataset, a substituition mutation of glycine is the most frequently occuring and thus this amino acid seems to have the highest impact on protein structure and function.
