@@ -1,3 +1,5 @@
+#Part 1: Plotting growth curves
+
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -41,3 +43,187 @@ if time_col in df.columns:
     plot_growth_curve(strain1_mut, strain1_wt, "Strain1")
     plot_growth_curve(strain2_mut, strain2_wt, "Strain2")
     plot_growth_curve(strain3_mut, strain3_wt, "Strain3")
+
+
+#Part 2: Carrying capacity
+
+import pandas as pd
+import numpy as np
+from math import log
+
+# Load dataset
+data_source = "https://raw.githubusercontent.com/HackBio-Internship/2025_project_collection/refs/heads/main/Python/Dataset/mcgc.tsv"
+df = pd.read_csv(data_source, sep='\t')
+
+# Define strains and their respective columns
+strains = {
+    "Strain1_MUT": ["A1", "A3", "B1", "B3", "C1", "C3"],
+    "Strain1_WT": ["A2", "A4", "B2", "B4", "C2", "C4"],
+    "Strain2_MUT": ["A5", "A7", "B5", "B7", "C5", "C7"],
+    "Strain2_WT": ["A6", "A8", "B6", "B8", "C6", "C8"],
+    "Strain3_MUT": ["A9", "A11", "B9", "B11", "C9", "C11"],
+    "Strain3_WT": ["A10", "A12", "B10", "B12", "C10", "C12"]
+}
+
+# Function to compute time to 80% of K
+def time_to_80_percent(P0, K, r):
+    return (1 / r) * log(((K - P0) / P0) * 0.25)
+
+# Function to estimate `r` using log-transformed OD600 values (linear regression approach)
+def estimate_growth_rate(time, OD600):
+    # Find the log phase (where OD600 increases exponentially)
+    log_OD600 = np.log(OD600[OD600 > 0])  # Log-transform OD600
+    log_time = time[:len(log_OD600)]  # Corresponding time points
+
+    # Estimate slope of log-transformed OD600 (r)
+    r_estimated = np.polyfit(log_time, log_OD600, 1)[0]  # Linear regression slope
+
+    return r_estimated
+
+# Function to analyze growth curve for a strain
+def analyze_growth_curve(strain_name, strain_columns):
+    time = df["time"]
+    OD600 = df[strain_columns].mean(axis=1)  # Compute mean OD600 for replicates
+
+    P0 = OD600.iloc[0]  # Initial OD600
+    K = OD600.max()  # Carrying capacity (max OD600)
+
+    # Estimate growth rate (r) using log-phase method
+    r_estimated = estimate_growth_rate(time, OD600)
+
+    # Compute time to 80% of carrying capacity
+    t_80 = time_to_80_percent(P0, K, r_estimated)
+
+    return {"Strain": strain_name, "K": round(K, 3), "r": round(r_estimated, 3), "t_80": round(t_80, 3)}
+
+# Run analysis for all strains and store results
+results = [analyze_growth_curve(name, cols) for name, cols in strains.items()]
+
+# Convert results to a DataFrame for better visualization
+results_df = pd.DataFrame(results)
+
+# Print results
+print(results_df)
+
+#Part 3: Scatterplot to determine the time it takes to reach carrying capacity for the knock out and the knock in strains
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Convert results list into a DataFrame
+results_df = pd.DataFrame(results)
+
+# Define a function to classify strains as Knockout (-) or Knockin (+)
+def classify_condition(strain):
+    if "MUT" in strain:
+        return "Knockout (-)"
+    else:
+        return "Knockin (+)"
+
+# Apply the function to create the "Condition" column
+results_df["Condition"] = results_df["Strain"].apply(classify_condition)
+
+# Create the scatterplot
+plt.figure(figsize=(8, 6))
+sns.scatterplot(data=results_df, x="Strain", y="t_80", hue="Condition", style="Condition", s=100)
+
+# Labels and title
+plt.xlabel("Strain")
+plt.ylabel("Time to 80% of Carrying Capacity (hours)")
+plt.title("Time to 80% of Carrying Capacity for Knockout (-) and Knockin (+) Strains")
+
+# Show the plot
+plt.show()
+
+Part 4: Boxplot
+
+#Create the boxplot
+#Applying the same code as scatterplot but change: 
+"sns.scatterplot(data=results_df, x="Strain", y="t_80", hue="Condition", style="Condition", s=100)" 
+to "sns.boxplot(data=results_df, x="Strain", y="t_80", hue="Condition")" instead.
+
+#Part 5: Analysing statistical difference in the time it takes the knock out strains to reach their maximum carrying capacity compared to the knock in strains
+
+import pandas as pd
+import numpy as np
+from math import log
+from scipy import stats
+
+# Load dataset
+data_source = "https://raw.githubusercontent.com/HackBio-Internship/2025_project_collection/refs/heads/main/Python/Dataset/mcgc.tsv"
+df = pd.read_csv(data_source, sep='\t')
+
+# Define strains and their respective columns
+strains = {
+    "Strain1_MUT": ["A1", "A3", "B1", "B3", "C1", "C3"],
+    "Strain1_WT": ["A2", "A4", "B2", "B4", "C2", "C4"],
+    "Strain2_MUT": ["A5", "A7", "B5", "B7", "C5", "C7"],
+    "Strain2_WT": ["A6", "A8", "B6", "B8", "C6", "C8"],
+    "Strain3_MUT": ["A9", "A11", "B9", "B11", "C9", "C11"],
+    "Strain3_WT": ["A10", "A12", "B10", "B12", "C10", "C12"]
+}
+
+# Function to compute time to 80% of K
+def time_to_80_percent(P0, K, r):
+    return (1 / r) * log(((K - P0) / P0) * 0.25)
+
+# Function to estimate `r` using log-transformed OD600 values (linear regression approach)
+def estimate_growth_rate(time, OD600):
+    # Find the log phase (where OD600 increases exponentially)
+    log_OD600 = np.log(OD600[OD600 > 0])  # Log-transform OD600
+    log_time = time[:len(log_OD600)]  # Corresponding time points
+
+    # Estimate slope of log-transformed OD600 (r)
+    r_estimated = np.polyfit(log_time, log_OD600, 1)[0]  # Linear regression slope
+
+    return r_estimated
+
+# Function to analyze growth curve for a strain
+def analyze_growth_curve(strain_name, strain_columns):
+    time = df["time"]
+    OD600 = df[strain_columns].mean(axis=1)  # Compute mean OD600 for replicates
+
+    P0 = OD600.iloc[0]  # Initial OD600
+    K = OD600.max()  # Carrying capacity (max OD600)
+
+    # Estimate growth rate (r) using log-phase method
+    r_estimated = estimate_growth_rate(time, OD600)
+
+    # Compute time to 80% of carrying capacity
+    t_80 = time_to_80_percent(P0, K, r_estimated)
+
+    return {"Strain": strain_name, "K": round(K, 3), "r": round(r_estimated, 3), "t_80": round(t_80, 3)}
+
+# Run analysis for all strains and store results
+results = [analyze_growth_curve(name, cols) for name, cols in strains.items()]
+
+# Convert results list into a DataFrame
+results_df = pd.DataFrame(results)
+
+# Define a function to classify strains as Knockout (-) or Knockin (+)
+def classify_condition(strain):
+    if "MUT" in strain:
+        return "Knockout (-)"
+    else:
+        return "Knockin (+)"
+
+# Apply the function to create the "Condition" column
+results_df["Condition"] = results_df["Strain"].apply(classify_condition)
+
+# Separate `t_80` values by condition
+knockout_t_80 = results_df[results_df["Condition"] == "Knockout (-)"]["t_80"]
+knockin_t_80 = results_df[results_df["Condition"] == "Knockin (+)"]["t_80"]
+
+# Perform t-test to compare the two groups
+t_stat, p_value = stats.ttest_ind(knockout_t_80, knockin_t_80)
+
+# Output t-test result
+print(f"T-statistic: {t_stat}")
+print(f"P-value: {p_value}")
+
+# Interpret the result
+if p_value < 0.05:
+    print("There is a statistically significant difference in the time to reach 80% carrying capacity.")
+else:
+    print("There is no statistically significant difference in the time to reach 80% carrying capacity.")
+#From running the code I see that there is no statistical significance in the time to reach the 80% capacity, which is in line with the similar growth rates observed in the growth curve.
