@@ -1,1 +1,26 @@
-i
+import pandas as pd
+data_source_SIFT = 'https://raw.githubusercontent.com/HackBio-Internship/public_datasets/main/R/datasets/sift.tsv'
+data_source_FoldX = 'https://raw.githubusercontent.com/HackBio-Internship/public_datasets/main/R/datasets/foldX.tsv'
+df_SIFT = pd.read_table(data_source_SIFT, sep='\s+')
+df_FoldX = pd.read_table(data_source_FoldX, sep='\s+')
+
+# Create the new concatenated column 'specific_protein_aa'
+df_SIFT['specific_protein_aa'] = df_SIFT['Protein'] + '_' + df_SIFT['Amino_Acid']
+
+# Save the updated DataFrame with the new column to a CSV file
+df_SIFT.to_csv('updated_file.csv', index=False)
+
+# Print the updated DataFrame to verify the result
+print(df_SIFT.head()) # Print the first few rows of the updated DataFrame
+
+df_FoldX['specific_protein_aa'] = df_FoldX['Protein'] + '_' + df_FoldX['Amino_Acid']
+df_FoldX.to_csv('updated_file.csv', index=False)
+print(df_FoldX.head())
+
+# Merge the dataframes on 'Protein' and 'Amino_Acid' to avoid duplicating columns
+final_dataframe = pd.merge(df_SIFT[['Protein', 'Amino_Acid', 'specific_protein_aa', 'sift_Score']],
+                           df_FoldX[['Protein', 'Amino_Acid', 'specific_protein_aa', 'foldX_Score']],
+                           on=['Protein', 'Amino_Acid'], how='inner')
+
+# Display the first few rows of the final dataframe
+print(final_dataframe.head())
