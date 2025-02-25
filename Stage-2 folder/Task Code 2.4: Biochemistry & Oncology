@@ -68,4 +68,4 @@ plt.title("Frequency of First Letters in Amino Acid Mutations")
 
 plt.show()
 
-#Results from frequency table show amino acid 'G' is the most frequenctly occuring in substitution mutations. G = Glycine. So that is, within this dataset, a substituition mutation of glycine is the most frequently occuring and thus this amino acid seems to have the highest impact on protein structure and function.
+#Results from frequency table show amino acid 'G' is the most frequenctly occuring in substitution mutations. G = Glycine. So that is, within this dataset, a substituition mutation of glycine is the most frequently occuring and thus this amino acid seems to have the highest impact on protein structure and function
