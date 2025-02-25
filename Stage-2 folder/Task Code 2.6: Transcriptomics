@@ -1,0 +1,60 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import requests
+import re
+import numpy as np
+
+# Load dataset
+url = "https://gist.githubusercontent.com/stephenturner/806e31fce55a8b7175af/raw/1a507c4c3f9f1baaa3a69187223ff3d3050628d4/results.txt"
+df = pd.read_csv(url, sep="\t")
+
+# Check dataset structure
+print(df.head())
+
+# Volcano plot
+plt.figure(figsize=(10, 6))
+sns.scatterplot(data=df, x='log2FoldChange', 
+                y=-np.log10(df['pvalue']), 
+                hue=df['log2FoldChange'].apply(lambda x: 'Up' if x > 1 else ('Down' if x < -1 else 'Neutral')),
+                palette={"Up": "red", "Down": "blue", "Neutral": "grey"}, alpha=0.7)
+
+plt.axvline(1, color='red', linestyle='dashed')
+plt.axvline(-1, color='blue', linestyle='dashed')
+plt.axhline(-np.log10(0.01), color='black', linestyle='dashed')
+
+plt.xlabel("Log2 Fold Change")
+plt.ylabel("-log10(p-value)")
+plt.title("Volcano Plot of Differential Gene Expression")
+plt.legend(title="Gene Regulation")
+plt.show()
+
+# Identify upregulated and downregulated genes
+upregulated = df[(df['log2FoldChange'] > 1) & (df['pvalue'] < 0.01)]
+downregulated = df[(df['log2FoldChange'] < -1) & (df['pvalue'] < 0.01)]
+
+print("Top 5 Upregulated Genes:\n", upregulated.head(5))
+print("Top 5 Downregulated Genes:\n", downregulated.head(5))
+
+# Function to fetch gene descriptions using regex
+def get_gene_function(gene_name):
+    url = f"https://www.genecards.org/cgi-bin/carddisp.pl?gene={gene_name}"
+    response = requests.get(url)
+    
+    if response.status_code == 200:
+        text = response.text
+        match = re.search(r'<meta name="description" content="([^"]+)"', text)
+        return match.group(1) if match else "Description not found"
+    return "Gene not found"
+
+# Fetch functions for top 5 upregulated and downregulated genes
+up_genes = upregulated['gene'].head(5).tolist()
+down_genes = downregulated['gene'].head(5).tolist()
+
+print("\nFunctions of Top 5 Upregulated Genes:")
+for gene in up_genes:
+    print(f"{gene}: {get_gene_function(gene)}")
+
+print("\nFunctions of Top 5 Downregulated Genes:")
+for gene in down_genes:
+    print(f"{gene}: {get_gene_function(gene)}")
